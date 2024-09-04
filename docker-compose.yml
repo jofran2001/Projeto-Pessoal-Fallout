@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:    
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: joaomysql
+      MYSQL_DATABASE: user
+    ports: 
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./db/sorteio.sql:/docker-entrypoint-initdb.d/sorteio.sql
+    networks:
+      - internet
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - "5002:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internet
+
+volumes:
+  db-data:
+
+networks:
+  internet:
+    driver: bridge
